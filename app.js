@@ -1,28 +1,53 @@
 
-angular.module('ShoppingListCheckOff', [])
+(function () {
+    'use strict';
 
-// Define the ShoppingListController
-.controller('ShoppingListController', function () {
-  var shoppingList = this;
+    angular.module('ShoppingListCheckOff', [])
+        .controller('ToBuyController', ToBuyController)
+        .controller('AlreadyBoughtController', AlreadyBoughtController)
+        .service('ShoppingListCheckOffService', ShoppingListCheckOffService);
 
-  // Initial "To Buy" items
-  shoppingList.toBuyItems = [
-    { name: "cookies", quantity: 10 },
-    { name: "apples", quantity: 5 },
-    { name: "bananas", quantity: 8 },
-    { name: "milk", quantity: 2 },
-    { name: "eggs", quantity: 12 }
-  ];
+    // Inject the service into both controllers
+    ToBuyController.$inject = ['ShoppingListCheckOffService'];
+    function ToBuyController(ShoppingListCheckOffService) {
+        var toBuy = this;
+        toBuy.items = ShoppingListCheckOffService.getToBuyItems();
 
-  // Initialize the "Bought" items as an empty array
-  shoppingList.boughtItems = [];
-
-  // Function to move an item from "To Buy" to "Bought" list
-  shoppingList.buyItem = function (item) {
-    var index = shoppingList.toBuyItems.indexOf(item);
-    if (index !== -1) {
-      shoppingList.toBuyItems.splice(index, 1); // Remove from "To Buy" list
-      shoppingList.boughtItems.push(item); // Add to "Bought" list
+        toBuy.buyItem = function (index) {
+            ShoppingListCheckOffService.buyItem(index);
+        };
     }
-  };
-});
+
+    AlreadyBoughtController.$inject = ['ShoppingListCheckOffService'];
+    function AlreadyBoughtController(ShoppingListCheckOffService) {
+        var alreadyBought = this;
+        alreadyBought.items = ShoppingListCheckOffService.getAlreadyBoughtItems();
+    }
+
+    function ShoppingListCheckOffService() {
+        var service = this;
+        var toBuyItems = [
+            { name: "cookies", quantity: 10 },
+            { name: "apples", quantity: 5 },
+            { name: "bananas", quantity: 8 },
+            { name: "milk", quantity: 2 },
+            { name: "eggs", quantity: 12 }
+        ];
+        var alreadyBoughtItems = [];
+
+        service.getToBuyItems = function () {
+            return toBuyItems;
+        };
+
+        service.getAlreadyBoughtItems = function () {
+            return alreadyBoughtItems;
+        };
+
+        service.buyItem = function (index) {
+            var item = toBuyItems.splice(index, 1)[0];
+            alreadyBoughtItems.push(item);
+        };
+    }
+
+})();
+
